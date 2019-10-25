@@ -1,0 +1,60 @@
+% foreach my $event(@events) {
+% my $start = RT::Date->new($session{'CurrentUser'});
+% $start->Unix($event->{'start'});
+% my $end = RT::Date->new($session{'CurrentUser'});
+% $end->Unix($event->{'end'});
+    <h3><% $event->{'summary'} %>: <% $start->AsString() %> (<% $start->DurationAsString($event->{'duration_seconds'}) %>)</h3>
+    <table>
+    <tbody>
+        <tr>
+            <td class="label">Scheduled for</td>
+            <td class="entry"><% $start->AsString() %> - <% $end->AsString() %></td>
+        </tr>
+        <tr>
+            <td class="label">Organizer</td>
+            <td class="entry"><% $event->{'organizer'} %></td>
+        </tr>
+        <tr>
+            <td class="label">Attendee</td>
+            <td class="entry"><% ref $event->{'attendee'} eq 'ARRAY' && join(', ', @{ $event->{'attendee'} }) || $event->{'attendee'} %></td>
+        </tr>
+%       if ($event->{'url'}) {
+        <tr>
+            <td class="label">URL</td>
+            <td class="entry"><a href="<% $event->{'url'} %>"><% $event->{'url'} %></td>
+        </tr>
+%       }
+    </tbody>
+    </table>
+    </div>
+%   if ($event->{'description'}) {
+%   my $description = $event->{'description'};
+%   $m->comp( '/Elements/MakeClicky', content => \$description, object => $Transaction, %ARGS);
+    <h3>Description</h3>
+    <div class="message-stanza plain-text-white-space"><% $description %>
+%   } else {
+    <div class="message-stanza">
+%   }
+% }
+<%init>
+    my @events;
+
+    if ($$content =~ m/BEGIN:VCALENDAR/i) {
+        @events = RT::Extension::ICalTransaction::Parser::parse($$content);
+        $$content = '';
+
+        $m->out('&nbsp;</div><div class="message-stanza">');
+    } else {
+        return;
+    }
+</%init>
+<%args>
+    $content => undef
+    $Message => undef
+    $Transaction => undef
+    $ContentType => 'text/plain'
+</%args>
+<%once>
+    use RT::Extension::ICalTransaction::Parser;
+    use Data::Dumper;
+</%once>
