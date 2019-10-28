@@ -21,6 +21,11 @@ sub parse {
 
     my @out = ();
     my $ical = Data::ICal->new(data => $data);
+
+    if (ref($ical) eq 'Class::ReturnValue' && $ical->error_message) {
+        return [], $ical->error_message;
+    }
+
     my @events = $ical->events();
 
     for my $entry(@events) {
@@ -44,7 +49,7 @@ sub parse {
         }
     }
 
-    return @out;
+    return \@out, '';
 }
 
 sub human_duration {

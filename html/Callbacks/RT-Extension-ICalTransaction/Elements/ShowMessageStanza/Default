@@ -1,4 +1,8 @@
-% foreach my $event(@events) {
+% if ($error) {
+    <h3>Error parsing event</h3>
+    <pre><% $error %></pre>
+% } else {
+% foreach my $event(@{ $events }) {
 % my $start = RT::Date->new($session{'CurrentUser'});
 % $start->Unix($event->{'start'});
 % my $end = RT::Date->new($session{'CurrentUser'});
@@ -35,12 +39,13 @@
 %   } else {
     <div class="message-stanza">
 %   }
-% }
+% } # END foreach my $event(@{ $events })
+% } # END if ($error)
 <%init>
-    my @events;
+    my ($events, $error);
 
-    if ($$content =~ m/BEGIN:VCALENDAR/i) {
-        @events = RT::Extension::ICalTransaction::Parser::parse($$content);
+    if ($$content =~ m/^BEGIN:VCALENDAR/i) {
+        ($events, $error) = RT::Extension::ICalTransaction::Parser::parse($$content);
         $$content = '';
 
         $m->out('&nbsp;</div><div class="message-stanza">');
