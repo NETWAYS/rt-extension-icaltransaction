@@ -1,6 +1,7 @@
 Changes
 doc/screenshot.png
-html/Callbacks/RT-Extension-ICalTransaction/Elements/ShowMessageStanza/Default
+html/Elements/ShowICalTransaction
+html/Elements/ShowTransactionAttachments
 inc/Module/Install.pm
 inc/Module/Install/Base.pm
 inc/Module/Install/Can.pm
