@@ -7,21 +7,34 @@
 % $start->Unix($event->{'start'});
 % my $end = RT::Date->new($session{'CurrentUser'});
 % $end->Unix($event->{'end'});
-    <h3><% $event->{'summary'} %>: <% $start->AsString() %> (<% $start->DurationAsString($event->{'duration_seconds'}) %>)</h3>
+    <h3>
+        <% $event->{'summary'} %>: <% $start->AsString() %>
+% if ($event->{'duration_seconds'}) {
+        (<% $start->DurationAsString($event->{'duration_seconds'}) %>)
+% }
+    </h3>
     <table>
     <tbody>
         <tr>
             <td class="label">Scheduled for</td>
-            <td class="entry"><% $start->AsString() %> - <% $end->AsString() %></td>
+            <td class="entry"><% $start->AsString() %>
+% if ($event->{'end'}) {
+            - <% $end->AsString() %>
+% }
+             </td>
         </tr>
+%       if ($event->{'organizer'}) {
         <tr>
             <td class="label">Organizer</td>
             <td class="entry"><% $event->{'organizer'} %></td>
         </tr>
+% }
+%       if ($event->{'attendee'}) {
         <tr>
             <td class="label">Attendee</td>
             <td class="entry"><% ref $event->{'attendee'} eq 'ARRAY' && join(', ', @{ $event->{'attendee'} }) || $event->{'attendee'} %></td>
         </tr>
+% }
 %       if ($event->{'url'}) {
         <tr>
             <td class="label">URL</td>

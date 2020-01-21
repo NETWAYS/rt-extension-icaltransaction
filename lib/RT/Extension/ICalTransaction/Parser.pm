@@ -31,18 +31,35 @@ sub parse {
     for my $entry(@events) {
         if ($entry && ref($entry) eq 'Data::ICal::Entry::Event') {
 
-            my $end = $entry->end();
             my $start = $entry->start();
-            my $duration = $end->delta_ms($start);
+            my $end = $entry->end();
+
+            my $duration_seconds = '';
+            my $duration_string = '';
+
+            my $start_epoch = '';
+            my $end_epoch = '';
+
+            if (ref($start)) {
+                $start_epoch = $entry->start()->epoch();
+            }
+
+            if (ref($start) && ref($end)) {
+                my $duration = $end->delta_ms($start);
+                $duration_seconds = $end->epoch() - $start->epoch();
+                $duration_string = human_duration($duration);
+
+                $end_epoch = $entry->end()->epoch
+            }
 
             push(@out, {
                 'url'              => $entry->url(),
                 'description'      => $entry->description(),
                 'summary'          => $entry->summary(),
-                'start'            => $entry->start()->epoch(),
-                'end'              => $entry->end()->epoch,
-                'duration_seconds' => $end->epoch() - $start->epoch(),
-                'duration_string'  => human_duration($duration),
+                'start'            => $start_epoch,
+                'end'              => $end_epoch,
+                'duration_seconds' => $duration_seconds,
+                'duration_string'  => $duration_string,
                 'organizer'        => property_value($entry, 'organizer', 'CN'),
                 'attendee'         => property_value($entry, 'attendee', 'CN')
             });
@@ -68,6 +85,10 @@ sub human_duration {
 sub property_value {
     my $entry = shift;
     my $propertyName = shift;
+
+    unless ($entry->property($propertyName)) {
+        return '';
+    }
 
     my @properties = @{ $entry->property($propertyName) };
     my @values;
