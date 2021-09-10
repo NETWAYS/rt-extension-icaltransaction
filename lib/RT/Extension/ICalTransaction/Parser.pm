@@ -3,9 +3,11 @@ package RT::Extension::ICalTransaction::Parser;
 use strict;
 use warnings FATAL => 'all';
 use diagnostics;
+use Data::Dumper;
 
 use Data::ICal::DateTime; # Use DateTime mixins
 use DateTime::Span;
+use Date::Manip::TZ;
 
 use subs qw(
     parse
@@ -21,6 +23,7 @@ sub parse {
 
     my @out = ();
     my $ical = Data::ICal->new(data => $data);
+    my $tz = new Date::Manip::TZ;
 
     if (ref($ical) eq 'Class::ReturnValue' && $ical->error_message) {
         return [], $ical->error_message;
@@ -31,8 +34,17 @@ sub parse {
     for my $entry(@events) {
         if ($entry && ref($entry) eq 'Data::ICal::Entry::Event') {
 
+            my $tzid_start = $tz->zone(property_value($entry, 'dtstart', 'TZID'));
             my $start = $entry->start();
+            if ($tzid_start) {
+                $start->set_time_zone($tzid_start);
+            }
+
+            my $tzid_end = $tz->zone(property_value($entry, 'dtend', 'TZID'));
             my $end = $entry->end();
+            if ($tzid_end) {
+                $end->set_time_zone($tzid_end);
+            }
 
             my $duration_seconds = '';
             my $duration_string = '';
@@ -56,8 +68,8 @@ sub parse {
                 'url'              => $entry->url(),
                 'description'      => $entry->description(),
                 'summary'          => $entry->summary(),
-                'start'            => $start_epoch,
-                'end'              => $end_epoch,
+                'start'            => $start->stringify,
+                'end'              => $end->stringify,
                 'duration_seconds' => $duration_seconds,
                 'duration_string'  => $duration_string,
                 'organizer'        => property_value($entry, 'organizer', 'CN'),

@@ -3,23 +3,17 @@
     <pre><% $error %></pre>
 % } else {
 % foreach my $event(@{ $events }) {
-% my $start = RT::Date->new($session{'CurrentUser'});
-% $start->Unix($event->{'start'});
-% my $end = RT::Date->new($session{'CurrentUser'});
-% $end->Unix($event->{'end'});
     <h3>
-        <% $event->{'summary'} %>: <% $start->AsString() %>
-% if ($event->{'duration_seconds'}) {
-        (<% $start->DurationAsString($event->{'duration_seconds'}) %>)
-% }
+        <% $event->{'summary'} %>: <% $event->{'start'} %>
+        (<% $event->{'duration_string'} %>)
     </h3>
     <table>
     <tbody>
         <tr>
             <td class="label">Scheduled for</td>
-            <td class="entry"><% $start->AsString() %>
+            <td class="entry"><% $event->{'start'} %>
 % if ($event->{'end'}) {
-            - <% $end->AsString() %>
+            - <% $event->{'end'} %>
 % }
              </td>
         </tr>
